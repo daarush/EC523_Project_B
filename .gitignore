@@ -1,0 +1,7 @@
+DeNoise/
+*.wav
+*.safetensors
+*.pt
+*.pth
+__pycache__/
+cli/smoke_outputs/
