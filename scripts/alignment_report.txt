@@ -1,0 +1,12 @@
+root: /projectnb/ec523kb/students/aarush/project_b/DeNoise/16khz
+clean files: 11572, noisy files: 11572
+extra noisy files with no clean match: 0
+Check 1 (format/length): 0 problems
+Check 2 (lag, 11572 files): 1 with |lag|>2 samples
+   (1208, 'p256_076.wav')
+max |lag|: 1208
+lag histogram: {0: 11571, 1208: 1}
+Check 3 (finite / peak<=1 / not silent): 0 flagged
+
+---
+Update 1: (1208, 'p256_076.wav') - flase alarm
