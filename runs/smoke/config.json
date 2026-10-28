@@ -1,0 +1,22 @@
+{
+  "data_root": "/projectnb/ec523kb/students/aarush/project_b/DeNoise/16khz",
+  "cli_dir": "/projectnb/ec523kb/students/aarush/project_b/cli",
+  "out": "runs/smoke",
+  "epochs": 20,
+  "batch_size": 8,
+  "lr": 0.001,
+  "clip": 10.0,
+  "crop_sec": 4.0,
+  "workers": 4,
+  "seed": 0,
+  "split_seed": 0,
+  "n_dev_speakers": 2,
+  "dev_speakers": [
+    "p256",
+    "p287"
+  ],
+  "limit_files": 64,
+  "dev_full_n": 40,
+  "resume": false,
+  "n_params": 5637635
+}
