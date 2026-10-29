@@ -1,0 +1,314 @@
+[
+  {
+    "input": "noisy",
+    "cap": "none",
+    "mask_limit_compressed": 9.9,
+    "mean_SISDR": 14.197675981256637,
+    "peak_median": 0.49264609813690186,
+    "peak_p95": 0.5206629455089569,
+    "peak_max": 0.5476802587509155,
+    "median_out_over_in_peak": 0.9625779304048514,
+    "files_over_1.0": 0,
+    "n_files": 200,
+    "worst": [
+      [
+        "p256_259.wav",
+        0.548
+      ],
+      [
+        "p287_187.wav",
+        0.548
+      ],
+      [
+        "p256_160.wav",
+        0.544
+      ]
+    ]
+  },
+  {
+    "input": "noisy",
+    "cap": "10",
+    "mask_limit_compressed": 4.6211715726000975,
+    "mean_SISDR": 14.197676031327747,
+    "peak_median": 0.49264609813690186,
+    "peak_p95": 0.5206629455089569,
+    "peak_max": 0.5476802587509155,
+    "median_out_over_in_peak": 0.9625779304048514,
+    "files_over_1.0": 0,
+    "n_files": 200,
+    "worst": [
+      [
+        "p256_259.wav",
+        0.548
+      ],
+      [
+        "p287_187.wav",
+        0.548
+      ],
+      [
+        "p256_160.wav",
+        0.544
+      ]
+    ]
+  },
+  {
+    "input": "noisy",
+    "cap": "5",
+    "mask_limit_compressed": 2.4491866240370914,
+    "mean_SISDR": 14.197669757917016,
+    "peak_median": 0.49264609813690186,
+    "peak_p95": 0.5206629455089569,
+    "peak_max": 0.5476802587509155,
+    "median_out_over_in_peak": 0.9625779304048514,
+    "files_over_1.0": 0,
+    "n_files": 200,
+    "worst": [
+      [
+        "p256_259.wav",
+        0.548
+      ],
+      [
+        "p287_187.wav",
+        0.548
+      ],
+      [
+        "p256_160.wav",
+        0.544
+      ]
+    ]
+  },
+  {
+    "input": "noisy",
+    "cap": "3",
+    "mask_limit_compressed": 1.4888503362331802,
+    "mean_SISDR": 14.197663507467764,
+    "peak_median": 0.49264609813690186,
+    "peak_p95": 0.5206629455089569,
+    "peak_max": 0.5476802587509155,
+    "median_out_over_in_peak": 0.9625779304048514,
+    "files_over_1.0": 0,
+    "n_files": 200,
+    "worst": [
+      [
+        "p256_259.wav",
+        0.548
+      ],
+      [
+        "p287_187.wav",
+        0.548
+      ],
+      [
+        "p256_160.wav",
+        0.544
+      ]
+    ]
+  },
+  {
+    "input": "noisy",
+    "cap": "2",
+    "mask_limit_compressed": 0.9966799462495581,
+    "mean_SISDR": 14.19762821645741,
+    "peak_median": 0.49264609813690186,
+    "peak_p95": 0.5206629455089569,
+    "peak_max": 0.5476802587509155,
+    "median_out_over_in_peak": 0.9625779304048514,
+    "files_over_1.0": 0,
+    "n_files": 200,
+    "worst": [
+      [
+        "p256_259.wav",
+        0.548
+      ],
+      [
+        "p287_187.wav",
+        0.548
+      ],
+      [
+        "p256_160.wav",
+        0.544
+      ]
+    ]
+  },
+  {
+    "input": "noisy",
+    "cap": "1",
+    "mask_limit_compressed": 0.49958374957879975,
+    "mean_SISDR": 14.159327847136389,
+    "peak_median": 0.49139347672462463,
+    "peak_p95": 0.5190812408924103,
+    "peak_max": 0.5437206625938416,
+    "median_out_over_in_peak": 0.9615429856191493,
+    "files_over_1.0": 0,
+    "n_files": 200,
+    "worst": [
+      [
+        "p256_160.wav",
+        0.544
+      ],
+      [
+        "p256_259.wav",
+        0.544
+      ],
+      [
+        "p287_187.wav",
+        0.543
+      ]
+    ]
+  },
+  {
+    "input": "clean",
+    "cap": "none",
+    "mask_limit_compressed": 9.9,
+    "mean_SISDR": 26.48352266530506,
+    "peak_median": 0.4967079758644104,
+    "peak_p95": 0.5071271270513534,
+    "peak_max": 0.518476665019989,
+    "median_out_over_in_peak": 1.0021670526321416,
+    "files_over_1.0": 0,
+    "n_files": 200,
+    "worst": [
+      [
+        "p287_148.wav",
+        0.518
+      ],
+      [
+        "p256_106.wav",
+        0.514
+      ],
+      [
+        "p256_022.wav",
+        0.513
+      ]
+    ]
+  },
+  {
+    "input": "clean",
+    "cap": "10",
+    "mask_limit_compressed": 4.6211715726000975,
+    "mean_SISDR": 26.48352266530506,
+    "peak_median": 0.4967079758644104,
+    "peak_p95": 0.5071271270513534,
+    "peak_max": 0.518476665019989,
+    "median_out_over_in_peak": 1.0021670526321416,
+    "files_over_1.0": 0,
+    "n_files": 200,
+    "worst": [
+      [
+        "p287_148.wav",
+        0.518
+      ],
+      [
+        "p256_106.wav",
+        0.514
+      ],
+      [
+        "p256_022.wav",
+        0.513
+      ]
+    ]
+  },
+  {
+    "input": "clean",
+    "cap": "5",
+    "mask_limit_compressed": 2.4491866240370914,
+    "mean_SISDR": 26.48352266530506,
+    "peak_median": 0.4967079758644104,
+    "peak_p95": 0.5071271270513534,
+    "peak_max": 0.518476665019989,
+    "median_out_over_in_peak": 1.0021670526321416,
+    "files_over_1.0": 0,
+    "n_files": 200,
+    "worst": [
+      [
+        "p287_148.wav",
+        0.518
+      ],
+      [
+        "p256_106.wav",
+        0.514
+      ],
+      [
+        "p256_022.wav",
+        0.513
+      ]
+    ]
+  },
+  {
+    "input": "clean",
+    "cap": "3",
+    "mask_limit_compressed": 1.4888503362331802,
+    "mean_SISDR": 26.48352266530506,
+    "peak_median": 0.4967079758644104,
+    "peak_p95": 0.5071271270513534,
+    "peak_max": 0.518476665019989,
+    "median_out_over_in_peak": 1.0021670526321416,
+    "files_over_1.0": 0,
+    "n_files": 200,
+    "worst": [
+      [
+        "p287_148.wav",
+        0.518
+      ],
+      [
+        "p256_106.wav",
+        0.514
+      ],
+      [
+        "p256_022.wav",
+        0.513
+      ]
+    ]
+  },
+  {
+    "input": "clean",
+    "cap": "2",
+    "mask_limit_compressed": 0.9966799462495581,
+    "mean_SISDR": 26.483523347077625,
+    "peak_median": 0.4967079758644104,
+    "peak_p95": 0.5071271270513534,
+    "peak_max": 0.518476665019989,
+    "median_out_over_in_peak": 1.0021670526321416,
+    "files_over_1.0": 0,
+    "n_files": 200,
+    "worst": [
+      [
+        "p287_148.wav",
+        0.518
+      ],
+      [
+        "p256_106.wav",
+        0.514
+      ],
+      [
+        "p256_022.wav",
+        0.513
+      ]
+    ]
+  },
+  {
+    "input": "clean",
+    "cap": "1",
+    "mask_limit_compressed": 0.49958374957879975,
+    "mean_SISDR": 26.655872153229616,
+    "peak_median": 0.49447154998779297,
+    "peak_p95": 0.5040373802185059,
+    "peak_max": 0.5146178603172302,
+    "median_out_over_in_peak": 0.997228297855979,
+    "files_over_1.0": 0,
+    "n_files": 200,
+    "worst": [
+      [
+        "p287_148.wav",
+        0.515
+      ],
+      [
+        "p256_022.wav",
+        0.513
+      ],
+      [
+        "p256_106.wav",
+        0.512
+      ]
+    ]
+  }
+]

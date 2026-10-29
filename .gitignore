@@ -5,3 +5,9 @@ DeNoise/
 *.pth
 __pycache__/
 cli/smoke_outputs/
+lengths_28spk.json
+logs/
+runs/smoke/
+runs/overfit/
+runs/*/dev/
+runs/*/pred_*/

@@ -166,12 +166,12 @@ class FullSubNet(nn.Module):
     # --- waveform -> waveform (full bandwidth, never drops bands)
     def forward(self, wave: torch.Tensor) -> torch.Tensor:
         length = wave.shape[-1]
-        if length < self.n_fft:
-            wave = F.pad(wave, (0, self.n_fft - length))
+        padded_len = -(-(length + self.n_fft // 2) // self.hop) * self.hop
+        wave = F.pad(wave, (0, padded_len - length))
         spec = self.stft(wave)
-        comp = self._net(spec.abs().unsqueeze(1), drop=False)          # [B,2,F,T]
+        comp = self._net(spec.abs().unsqueeze(1), drop=False)
         m = decompress_cirm(comp)
-        out = self.istft(spec * torch.complex(m[:, 0], m[:, 1]), wave.shape[-1])
+        out = self.istft(spec * torch.complex(m[:, 0], m[:, 1]), padded_len)
         return out[..., :length]
 
     # --- training: loss = F.mse_loss(*model.training_pair(noisy, clean))
