@@ -1,0 +1,97 @@
+[
+  {
+    "stage": "resources",
+    "exit_code": 0,
+    "seconds": 20.252304792404175,
+    "command": [
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/.venv-scc/bin/python",
+      "scripts/measure_resources.py",
+      "--out",
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/runs/clean_preservation_20261030/resources.json",
+      "--train-batch-sizes",
+      "8",
+      "--clean-loss-weight",
+      ".1"
+    ]
+  },
+  {
+    "stage": "training",
+    "exit_code": 0,
+    "seconds": 7489.211034536362,
+    "command": [
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/.venv-scc/bin/python",
+      "scripts/train.py",
+      "--data-root",
+      "/projectnb/ec523kb/projects/DeNoise/16khz",
+      "--train-manifest",
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/runs/clean_preservation_20261030/train.txt",
+      "--dev-manifest",
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/runs/clean_preservation_20261030/dev.txt",
+      "--out",
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/runs/clean_preservation_20261030/model",
+      "--epochs",
+      "30",
+      "--batch-size",
+      "8",
+      "--lr",
+      ".001",
+      "--crop-sec",
+      "4",
+      "--workers",
+      "3",
+      "--seed",
+      "0",
+      "--device",
+      "cuda",
+      "--clean-loss-weight",
+      ".1"
+    ]
+  },
+  {
+    "stage": "output_checks",
+    "exit_code": 0,
+    "seconds": 5.070284843444824,
+    "command": [
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/.venv-scc/bin/python",
+      "scripts/validate_checkpoint.py",
+      "--checkpoint",
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/runs/clean_preservation_20261030/model/best.safetensors",
+      "--device",
+      "cuda",
+      "--out",
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/runs/clean_preservation_20261030/validation.json"
+    ]
+  },
+  {
+    "stage": "cli_evaluation",
+    "exit_code": 0,
+    "seconds": 154.36819791793823,
+    "command": [
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/.venv-scc/bin/python",
+      "scripts/evaluate_run.py",
+      "--checkpoint",
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/runs/clean_preservation_20261030/model/best.safetensors",
+      "--dev-dir",
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/runs/clean_preservation_20261030/model/dev",
+      "--out",
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/runs/clean_preservation_20261030/evaluation",
+      "--device",
+      "cuda"
+    ]
+  },
+  {
+    "stage": "comparison",
+    "exit_code": 0,
+    "seconds": 0.2624528408050537,
+    "command": [
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/.venv-scc/bin/python",
+      "scripts/summarize_results.py",
+      "--run",
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/runs/baseline",
+      "--comparison",
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/runs/clean_preservation_20261030/evaluation",
+      "--out",
+      "/projectnb/ec523kb/students/austinli/EC523_Project_B/runs/clean_preservation_20261030/comparison"
+    ]
+  }
+]

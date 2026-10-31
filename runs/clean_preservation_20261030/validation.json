@@ -1,0 +1,100 @@
+{
+  "passed": true,
+  "trainable_parameters": 5637635,
+  "cases": [
+    {
+      "case": "length_1",
+      "pass": true,
+      "peak": 0.0005142170703038573,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "case": "length_100",
+      "pass": true,
+      "peak": 0.06373708695173264,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "case": "length_255",
+      "pass": true,
+      "peak": 0.026444753631949425,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "case": "length_256",
+      "pass": true,
+      "peak": 0.02607026696205139,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "case": "length_257",
+      "pass": true,
+      "peak": 0.0941263884305954,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "case": "length_511",
+      "pass": true,
+      "peak": 0.032866790890693665,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "case": "length_512",
+      "pass": true,
+      "peak": 0.03411091864109039,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "case": "length_513",
+      "pass": true,
+      "peak": 0.032984960824251175,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "case": "length_16000",
+      "pass": true,
+      "peak": 0.01265805121511221,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "case": "length_480000",
+      "pass": true,
+      "peak": 0.02196224220097065,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "case": "silence",
+      "pass": true,
+      "peak": 0.0,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "case": "tone_peak_0.001",
+      "pass": true,
+      "peak": 0.000996646354906261,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "case": "tone_peak_0.5",
+      "pass": true,
+      "peak": 0.34549903869628906,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "case": "tone_peak_0.99",
+      "pass": true,
+      "peak": 0.5904407501220703,
+      "repeat_bitwise_equal": true
+    },
+    {
+      "case": "tone_peak_1.0",
+      "pass": true,
+      "peak": 0.5953934788703918,
+      "repeat_bitwise_equal": true
+    }
+  ],
+  "checkpoint_sha256": "7fb67c3fb9a081d5d2b76d84303ee8077802b9931977af828f66ecbd65a1ef10",
+  "source_sha256": "096e0e0bcb2ac061f6d24b8df1175fa5b5a849ae622e59d8ece5bd24f148b002",
+  "scope": "sampled synthetic edge cases; not proof for all possible inputs",
+  "device": "cuda"
+}

@@ -1,0 +1,15 @@
+{
+  "status": "local_evaluation_complete_NOT_server_submission",
+  "checkpoint_sha256": "7fb67c3fb9a081d5d2b76d84303ee8077802b9931977af828f66ecbd65a1ef10",
+  "source_sha256": "096e0e0bcb2ac061f6d24b8df1175fa5b5a849ae622e59d8ece5bd24f148b002",
+  "versions": {
+    "torch": "2.6.0",
+    "numpy": "2.3.5",
+    "scipy": "1.15.2",
+    "safetensors": "0.5.3",
+    "pesq": "0.0.4",
+    "pystoi": "0.4.1",
+    "soundfile": "0.13.1"
+  },
+  "device": "cuda"
+}

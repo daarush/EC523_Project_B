@@ -1,0 +1,2 @@
+-r cli/requirements.txt
+soundfile==0.13.1

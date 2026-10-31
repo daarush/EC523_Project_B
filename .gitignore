@@ -9,5 +9,14 @@ lengths_28spk.json
 logs/
 runs/smoke/
 runs/overfit/
+runs/local_smoke*/
 runs/*/dev/
 runs/*/pred_*/
+.venv*/
+.codex/
+.agents/
+CHECKPOINT_READINESS.md
+checkpoint_review/
+runs/*/bundle/
+runs/*/evaluation/pred_*/
+*.tar.gz

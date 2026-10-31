@@ -1,0 +1,25 @@
+{
+  "data_root": "/projectnb/ec523kb/projects/DeNoise/16khz",
+  "cli_dir": "/projectnb/ec523kb/students/austinli/EC523_Project_B/cli",
+  "out": "/projectnb/ec523kb/students/austinli/EC523_Project_B/runs/clean_preservation_20261030/model",
+  "epochs": 30,
+  "batch_size": 8,
+  "lr": 0.001,
+  "clip": 10.0,
+  "crop_sec": 4.0,
+  "workers": 3,
+  "seed": 0,
+  "limit_files": 0,
+  "dev_full_n": 40,
+  "resume": false,
+  "train_manifest": "/projectnb/ec523kb/students/austinli/EC523_Project_B/runs/clean_preservation_20261030/train.txt",
+  "dev_manifest": "/projectnb/ec523kb/students/austinli/EC523_Project_B/runs/clean_preservation_20261030/dev.txt",
+  "clean_loss_weight": 0.1,
+  "device": "cuda",
+  "dev_speakers": [
+    "p256",
+    "p287"
+  ],
+  "n_params": 5637635,
+  "source_sha256": "096e0e0bcb2ac061f6d24b8df1175fa5b5a849ae622e59d8ece5bd24f148b002"
+}

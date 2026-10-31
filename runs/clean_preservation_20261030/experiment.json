@@ -1,0 +1,16 @@
+{
+  "hypothesis": "Clean-to-clean mask loss may reduce clean-speech distortion.",
+  "clean_loss_weight": 0.1,
+  "epochs": 30,
+  "seed": 0,
+  "split": "Team-chosen: p256 and p287 validation; course requirement unconfirmed",
+  "comparison": "Existing teammate baseline reports; original weights not independently rerun",
+  "budget": "Same noisy examples/epochs, extra clean forward pass; not compute matched",
+  "source_sha256": {
+    "scripts/train.py": "55cb4130cf4636dcde1f42c632491bc171a4a250b3b51dbe2a5fdaf3864bdcbe",
+    "scripts/measure_resources.py": "38b348023661a9a6a666da73d542031bf7ba8bb93ff371e44b917c706eb49ea6",
+    "scripts/evaluate_run.py": "3d2a60a01286ab6b87a1aa12d2dd92f51c393187e0a3a78b3f59dd0d7a06f9d8",
+    "cli/submission/model.py": "096e0e0bcb2ac061f6d24b8df1175fa5b5a849ae622e59d8ece5bd24f148b002"
+  },
+  "server_submission": false
+}

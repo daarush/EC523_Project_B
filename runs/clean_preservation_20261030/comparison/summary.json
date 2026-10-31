@@ -1,0 +1,30 @@
+{
+  "provenance": "recomputed from supplied reports; audio/weights not re-evaluated",
+  "baseline_local_score": 65.23513141914763,
+  "server_submission_verified": false,
+  "proposal_local_score": 65.90559871570008,
+  "proposal_minus_baseline": {
+    "pesq": {
+      "mean_difference": -0.029093222449655117,
+      "paired_utterance_95pct_interval": [
+        -0.03629712727244781,
+        -0.021931533045742826
+      ]
+    },
+    "stoi": {
+      "mean_difference": -0.0018191466982271317,
+      "paired_utterance_95pct_interval": [
+        -0.002573770289572688,
+        -0.0010514076755617995
+      ]
+    },
+    "si_sdr": {
+      "mean_difference": 0.17572781826578224,
+      "paired_utterance_95pct_interval": [
+        0.13336690202181922,
+        0.21608530927796366
+      ]
+    }
+  },
+  "interval_limit": "Utterance resampling only; not uncertainty across seeds or speakers."
+}
