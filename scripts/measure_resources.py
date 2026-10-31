@@ -34,7 +34,7 @@ def macs_per_second(model):
             "share_of_macs_in_subband": n_freq * sb / per_frame}
 
 
-def train_mem(build, dev, bs, crop):
+def train_mem(build, dev, bs, crop, clean_weight=0.0):
     model = build(SR).to(dev).train()
     opt = torch.optim.Adam(model.parameters(), lr=1e-3)
     torch.cuda.empty_cache(); torch.cuda.reset_peak_memory_stats()
@@ -44,6 +44,9 @@ def train_mem(build, dev, bs, crop):
             y = torch.randn(bs, crop, device=dev) * 0.1
             pred, tgt = model.training_pair(x, y)
             loss = F.mse_loss(pred, tgt)
+            if clean_weight:
+                clean_pred, clean_target = model.training_pair(y, y)
+                loss = loss + clean_weight * F.mse_loss(clean_pred, clean_target)
             opt.zero_grad(set_to_none=True); loss.backward(); opt.step()
         torch.cuda.synchronize()
         res = torch.cuda.max_memory_allocated() / 2 ** 30
@@ -80,13 +83,14 @@ def main():
     p.add_argument("--out", default="resources.json")
     p.add_argument("--train-batch-sizes", default="4,8,16")
     p.add_argument("--crop-sec", type=float, default=4.0)
+    p.add_argument("--clean-loss-weight", type=float, default=0.0)
     a = p.parse_args()
     sys.path.insert(0, a.cli_dir)
     from submission.model import build_enhancer
 
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     res = {"device": torch.cuda.get_device_name(0) if dev.type == "cuda" else "cpu",
-           "torch": torch.__version__}
+           "torch": torch.__version__, "clean_loss_weight": a.clean_loss_weight}
     m = build_enhancer(SR)
     res["params"] = sum(p.numel() for p in m.parameters())
     res["trainable_params"] = sum(p.numel() for p in m.parameters() if p.requires_grad)
@@ -95,7 +99,7 @@ def main():
     res["inference"] = [infer(build_enhancer, dev, s) for s in (4, 10, 15)]
     if dev.type == "cuda":
         crop = int(a.crop_sec * SR)
-        res["train_peak_mem_GiB"] = {int(b): train_mem(build_enhancer, dev, int(b), crop)
+        res["train_peak_mem_GiB"] = {int(b): train_mem(build_enhancer, dev, int(b), crop, a.clean_loss_weight)
                                      for b in a.train_batch_sizes.split(",")}
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(res, indent=2))

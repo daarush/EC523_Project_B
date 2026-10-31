@@ -8,8 +8,9 @@ Only the code path used by the paper's config is kept
 
 Course interface: build_enhancer(16000) -> module with enhance([1,T], 16000) -> [1,T].
 
-NOT taken from the files provided (written from memory/paper, VERIFY against
-audio_zen/acoustics/mask.py): the cIRM build / compress / decompress functions and EPS.
+The cIRM build/compress/decompress equations and EPS were checked against the
+locally cloned official audio_zen/acoustics/mask.py and constant.py on 2026-10-30.
+This implementation puts the real/imaginary dimension second rather than last.
 """
 
 import torch
@@ -17,7 +18,7 @@ import torch.nn as nn
 import torch.nn.init as init
 import torch.nn.functional as F
 
-EPS = torch.finfo(torch.float32).eps  # ASSUMPTION: official audio_zen EPSILON not shown
+EPS = torch.finfo(torch.float32).eps  # Same float32 epsilon as official NumPy constant.
 
 
 # ---------------------------------------------------------------- helpers (official)
@@ -84,7 +85,7 @@ def _official_init(m):
                 init.normal_(p.data)
 
 
-# ---------------------------------------------------------------- cIRM (verify vs mask.py)
+# ---------------------------------------------------------------- cIRM
 K_MASK, C_MASK, LIMIT = 10.0, 0.1, 9.9
 
 

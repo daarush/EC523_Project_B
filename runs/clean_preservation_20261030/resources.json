@@ -1,0 +1,38 @@
+{
+  "device": "NVIDIA L40S",
+  "torch": "2.6.0+cu124",
+  "clean_loss_weight": 0.1,
+  "params": 5637635,
+  "trainable_params": 5637635,
+  "macs": {
+    "fullband_weights": 3803648,
+    "subband_weights": 1819392,
+    "macs_per_frame": 471387392,
+    "frames_per_second": 62.5,
+    "GMACs_per_audio_second": 29.461712,
+    "share_of_macs_in_subband": 0.9919309509236938
+  },
+  "inference": [
+    {
+      "audio_s": 4,
+      "median_latency_s": 0.009769139520358294,
+      "rtf": 0.0024422848800895736,
+      "peak_mem_GiB": 0.6319737434387207
+    },
+    {
+      "audio_s": 10,
+      "median_latency_s": 0.0243398625170812,
+      "rtf": 0.00243398625170812,
+      "peak_mem_GiB": 0.9485635757446289
+    },
+    {
+      "audio_s": 15,
+      "median_latency_s": 0.035961394489277154,
+      "rtf": 0.002397426299285144,
+      "peak_mem_GiB": 1.2096452713012695
+    }
+  ],
+  "train_peak_mem_GiB": {
+    "8": 12.400081157684326
+  }
+}
