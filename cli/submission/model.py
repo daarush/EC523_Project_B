@@ -184,6 +184,21 @@ class FullSubNet(nn.Module):
         if drop:
             target = drop_band(target, self.groups)   # same reorder/selection as the input
         return pred, target
+    
+    def training_triplet(self, noisy, clean):
+        """Like training_pair, plus the reconstructed spectrum and matching clean spectrum
+        (same drop_band selection/reorder), for an output-domain spectral loss."""
+        ns, cs = self.stft(noisy), self.stft(clean)
+        drop = self.training and self.groups > 1 and noisy.shape[0] > self.groups
+        pred = self._net(ns.abs().unsqueeze(1), drop=drop)
+        target = build_compressed_cirm(ns, cs)
+        if drop:
+            target = drop_band(target, self.groups)
+            ns = drop_band(ns.unsqueeze(1), self.groups).squeeze(1)
+            cs = drop_band(cs.unsqueeze(1), self.groups).squeeze(1)
+        m = decompress_cirm(pred)
+        est = ns * torch.complex(m[:, 0], m[:, 1])
+        return pred, target, est, cs
 
     @torch.no_grad()
     def enhance(self, waveform: torch.Tensor, sample_rate: int) -> torch.Tensor:

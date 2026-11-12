@@ -1,0 +1,33 @@
+{
+  "data_root": "/projectnb/ec523kb/students/aarush/project_b/DeNoise/16khz",
+  "cli_dir": "/projectnb/ec523kb/students/aarush/project_b/cli",
+  "out": "runs/fsn_remix",
+  "epochs": 30,
+  "batch_size": 8,
+  "lr": 0.001,
+  "clip": 10.0,
+  "crop_sec": 4.0,
+  "workers": 3,
+  "seed": 0,
+  "limit_files": 0,
+  "dev_full_n": 40,
+  "resume": false,
+  "train_manifest": "/projectnb/ec523kb/students/aarush/project_b/runs/baseline/train_files.txt",
+  "dev_manifest": "/projectnb/ec523kb/students/aarush/project_b/runs/baseline/dev_files.txt",
+  "clean_loss_weight": 0.0,
+  "spec_loss_weight": 0.0,
+  "remix_prob": 0.5,
+  "remix_snr": [
+    0.0,
+    20.0
+  ],
+  "select": "score",
+  "cosine": true,
+  "device": "cuda",
+  "dev_speakers": [
+    "p256",
+    "p287"
+  ],
+  "n_params": 5637635,
+  "source_sha256": "06ceb0e332935177abad7d49309a238c1306896878437d730b6bcca1ca600379"
+}

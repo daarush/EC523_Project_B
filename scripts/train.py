@@ -2,20 +2,26 @@
 
 project_b/scripts/ (it imports cli/submission/model.py).
 
-See README.md for commands with explicit data root and selected
-train/development manifests. Use scripts/local_smoke.py for a synthetic CPU check.
-
 Everything that must stay IDENTICAL between baseline and modified runs is a CLI flag
 or fixed constant here: split seed, crop, optimizer, lr, batch size, epochs, selection rule.
-Selection rule (declared): checkpoint with the lowest dev loss (MSE on compressed cIRM).
+
+Modification flags (all default to baseline behavior except --select/--cosine, which you
+should set identically on the control run):
+  --spec-loss-weight  compressed spectral loss on the reconstructed output
+  --remix-prob        remix clean_i + noise_j (noise = noisy - clean) at random SNR
+  --select            'loss' (dev mask MSE) or 'score' (dev PESQ/STOI/SI-SDR composite)
+  --cosine            cosine LR decay
+  --clean-loss-weight Austin's clean-input identity loss
 """
-import argparse, hashlib, json, random, shutil, sys, time
+import argparse, hashlib, json, math, random, shutil, sys, time
 from pathlib import Path
 
 import numpy as np
 import soundfile as sf
 import torch
 import torch.nn.functional as F
+from pesq import pesq as pesq_fn
+from pystoi import stoi as stoi_fn
 from safetensors.torch import save_file
 from torch.utils.data import DataLoader, Dataset
 
@@ -30,17 +36,24 @@ def get_args():
     p.add_argument("--epochs", type=int, default=30)
     p.add_argument("--batch-size", type=int, default=8)   # must be > num_groups_in_drop_band (2)
     p.add_argument("--lr", type=float, default=1e-3)       # paper: Adam, 1e-3
-    p.add_argument("--clip", type=float, default=10.0)     # my default; not in the files you pasted
+    p.add_argument("--clip", type=float, default=10.0)
     p.add_argument("--crop-sec", type=float, default=4.0)
     p.add_argument("--workers", type=int, default=4)
     p.add_argument("--seed", type=int, default=0)          # training seed
     p.add_argument("--limit-files", type=int, default=0)   # >0: only first N train files (overfit test)
-    p.add_argument("--dev-full-n", type=int, default=40)   # full utterances for SI-SDR/peak logging
+    p.add_argument("--dev-full-n", type=int, default=40)   # full utterances for PESQ/STOI/SI-SDR/peak logging
     p.add_argument("--resume", action="store_true")
     p.add_argument("--train-manifest", required=True, type=Path)
     p.add_argument("--dev-manifest", required=True, type=Path)
     p.add_argument("--clean-loss-weight", type=float, default=0.0,
                    help="Optional clean-input identity mask loss; 0 is the baseline.")
+    p.add_argument("--spec-loss-weight", type=float, default=0.0,
+                   help="Compressed spectral loss on reconstructed output; 0 disables.")
+    p.add_argument("--remix-prob", type=float, default=0.0,
+                   help="Probability a training sample is remixed (clean_i + noise_j).")
+    p.add_argument("--remix-snr", type=float, nargs=2, default=(0.0, 20.0))
+    p.add_argument("--select", choices=("loss", "score"), default="loss")
+    p.add_argument("--cosine", action="store_true")
     p.add_argument("--device", choices=("cpu", "cuda"), default=None)
     return p.parse_args()
 
@@ -67,26 +80,40 @@ def load_split(train_path, dev_path, clean_dir, noisy_dir):
     return train, dev
 
 
-def training_loss(model, noisy, clean, clean_weight):
-    pred, target = model.training_pair(noisy, clean)
-    noisy_loss = F.mse_loss(pred, target)
-    if clean_weight == 0:
-        return noisy_loss
-    clean_pred, clean_target = model.training_pair(clean, clean)
-    return noisy_loss + clean_weight * F.mse_loss(clean_pred, clean_target)
+def comp_spec_loss(est, ref, c=0.3, eps=1e-8):
+    """Power-compressed magnitude + compressed real/imag MSE on complex spectra."""
+    em = (est.real ** 2 + est.imag ** 2 + eps).sqrt()
+    rm = (ref.real ** 2 + ref.imag ** 2 + eps).sqrt()
+    return (F.mse_loss(em ** c, rm ** c)
+            + F.mse_loss(est.real * em ** (c - 1), ref.real * rm ** (c - 1))
+            + F.mse_loss(est.imag * em ** (c - 1), ref.imag * rm ** (c - 1)))
+
+
+def training_loss(model, noisy, clean, a):
+    pred, target, est, cs = model.training_triplet(noisy, clean)
+    loss = F.mse_loss(pred, target)
+    if a.spec_loss_weight > 0:
+        loss = loss + a.spec_loss_weight * comp_spec_loss(est, cs)
+    if a.clean_loss_weight > 0:   # Austin's term, unchanged
+        cp, ct = model.training_pair(clean, clean)
+        loss = loss + a.clean_loss_weight * F.mse_loss(cp, ct)
+    return loss
 
 
 class PairCrops(Dataset):
-    """Same start index for noisy and clean. Shorter files are zero-padded together."""
+    """Same start index for noisy and clean. Shorter files are zero-padded together.
+    Optional remix (train only): clean_i + noise_j at a random SNR, noise = noisy_j - clean_j."""
 
-    def __init__(self, clean_dir, noisy_dir, names, lengths, crop, fixed):
+    def __init__(self, clean_dir, noisy_dir, names, lengths, crop, fixed,
+                 remix_prob=0.0, snr_range=(0.0, 20.0)):
         self.cd, self.nd, self.names, self.lengths = clean_dir, noisy_dir, names, lengths
         self.crop, self.fixed = crop, fixed
+        self.remix_prob, self.snr_range = remix_prob, snr_range
 
     def __len__(self):
         return len(self.names)
 
-    def __getitem__(self, i):
+    def _crop(self, i):
         L, n = self.lengths[i], self.names[i]
         if L > self.crop:
             hi = L - self.crop + 1
@@ -96,6 +123,23 @@ class PairCrops(Dataset):
         stop = min(start + self.crop, L)
         y, _ = sf.read(self.cd / n, start=start, stop=stop, dtype="float32")
         x, _ = sf.read(self.nd / n, start=start, stop=stop, dtype="float32")
+        return x, y
+
+    def __getitem__(self, i):
+        x, y = self._crop(i)
+        if (not self.fixed) and self.remix_prob > 0 and float(torch.rand(1)) < self.remix_prob:
+            j = int(torch.randint(0, len(self.names), (1,)))
+            xj, yj = self._crop(j)
+            noise = xj - yj
+            noise = np.tile(noise, -(-len(y) // len(noise)))[:len(y)]
+            snr = float(torch.empty(1).uniform_(*self.snr_range))
+            py, pn = np.mean(y ** 2) + 1e-10, np.mean(noise ** 2) + 1e-10
+            noise = noise * np.sqrt(py / (pn * 10 ** (snr / 10)))
+            x = (y + noise).astype(np.float32)
+            peak = float(max(np.abs(x).max(), np.abs(y).max()))
+            if peak > 0.99:   # scale both so the clean/noisy relationship stays physical
+                s = 0.99 / peak
+                x, y = (x * s).astype(np.float32), (y * s).astype(np.float32)
         pad = self.crop - len(y)
         if pad > 0:
             y, x = np.pad(y, (0, pad)), np.pad(x, (0, pad))
@@ -121,6 +165,10 @@ def main():
     a = get_args()
     if a.clean_loss_weight < 0 or not np.isfinite(a.clean_loss_weight):
         raise ValueError("clean-loss-weight must be finite and nonnegative")
+    if a.spec_loss_weight < 0 or not np.isfinite(a.spec_loss_weight):
+        raise ValueError("spec-loss-weight must be finite and nonnegative")
+    if not 0.0 <= a.remix_prob <= 1.0:
+        raise ValueError("remix-prob must be in [0,1]")
     if a.batch_size < 3 or a.crop_sec * SR <= 256 or a.epochs < 1:
         raise ValueError("Use batch-size >=3, crop >256 samples, and epochs >=1")
     out = Path(a.out)
@@ -130,7 +178,8 @@ def main():
         raise ValueError("Cannot resume without last.pt")
     if a.resume:
         previous = json.loads((out / 'config.json').read_text())
-        for key in ('clean_loss_weight', 'batch_size', 'crop_sec', 'lr', 'seed'):
+        for key in ('clean_loss_weight', 'spec_loss_weight', 'remix_prob', 'select',
+                    'cosine', 'batch_size', 'crop_sec', 'lr', 'seed'):
             if previous.get(key) != getattr(a, key):
                 raise ValueError(f"Resume configuration changed: {key}")
     out.mkdir(parents=True, exist_ok=True)
@@ -168,7 +217,8 @@ def main():
     lens = {n: sf.info(cd / n).frames for n in names}
     crop = int(a.crop_sec * SR)
 
-    tr_ds = PairCrops(cd, nd, tr_names, [lens[n] for n in tr_names], crop, fixed=False)
+    tr_ds = PairCrops(cd, nd, tr_names, [lens[n] for n in tr_names], crop, fixed=False,
+                      remix_prob=a.remix_prob, snr_range=tuple(a.remix_snr))
     dv_ds = PairCrops(cd, nd, dv_names, [lens[n] for n in dv_names], crop, fixed=True)
     g = torch.Generator(); g.manual_seed(a.seed)
     tr_dl = DataLoader(tr_ds, a.batch_size, shuffle=True, drop_last=True, num_workers=a.workers,
@@ -207,13 +257,16 @@ def main():
 
     for epoch in range(start_epoch, a.epochs):
         t0 = time.time()
+        if a.cosine:
+            for gp in opt.param_groups:
+                gp["lr"] = a.lr * 0.5 * (1 + math.cos(math.pi * epoch / a.epochs))
         if dev.type == "cuda":
             torch.cuda.reset_peak_memory_stats()
         model.train()
         tot, nb = 0.0, 0
         for step, (x, y) in enumerate(tr_dl):
             x, y = x.to(dev, non_blocking=True), y.to(dev, non_blocking=True)
-            loss = training_loss(model, x, y, a.clean_loss_weight)
+            loss = training_loss(model, x, y, a)
             if not torch.isfinite(loss):
                 raise RuntimeError("Non-finite training loss")
             opt.zero_grad(set_to_none=True)
@@ -225,7 +278,7 @@ def main():
                 print(f"  ep {epoch} step {step}/{len(tr_dl)} loss {loss.item():.4f}", flush=True)
         tr_loss = tot / max(nb, 1)
 
-        # ---- dev: fixed crops loss + full-utterance SI-SDR / peak
+        # ---- dev: fixed crops loss + full-utterance SI-SDR / PESQ / STOI / peak
         model.eval()
         with torch.no_grad():
             s, n = 0.0, 0
@@ -234,20 +287,31 @@ def main():
                 pred, tgt = model.training_pair(x, y)
                 s += F.mse_loss(pred, tgt, reduction="sum").item(); n += pred.numel()
             dv_loss = s / n
-            sd_in, sd_out, peak = [], [], 0.0
+            sd_in, sd_out, peak, pq, st = [], [], 0.0, [], []
             for nme in dev_full:
                 yy, _ = sf.read(cd / nme, dtype="float32"); xx, _ = sf.read(nd / nme, dtype="float32")
                 en = model.enhance(torch.from_numpy(xx)[None].to(dev), SR)[0].cpu().numpy()
                 sd_in.append(si_sdr(xx, yy)); sd_out.append(si_sdr(en, yy))
                 peak = max(peak, float(np.abs(en).max()))
+                try:
+                    pq.append(pesq_fn(SR, yy, en, "wb")); st.append(stoi_fn(yy, en, SR))
+                except Exception:
+                    pass
+        m_pq = float(np.mean(pq)) if pq else 1.0
+        m_st = float(np.mean(st)) if st else 0.0
+        A_dev = (0.4 * np.clip((m_pq - 1) / 3.5, 0, 1) + 0.3 * np.clip(m_st, 0, 1)
+                 + 0.3 * np.clip((np.mean(sd_out) + 10) / 40, 0, 1))
         mem = torch.cuda.max_memory_allocated() / 2**30 if dev.type == "cuda" else 0.0
         line = (f"epoch {epoch} train {tr_loss:.4f} dev {dv_loss:.4f} "
                 f"dev_SISDR noisy {np.mean(sd_in):.2f} -> enh {np.mean(sd_out):.2f} dB "
-                f"peak {peak:.3f} mem {mem:.1f}GiB time {time.time()-t0:.0f}s")
+                f"pesq {m_pq:.3f} stoi {m_st:.4f} A_dev {A_dev:.4f} "
+                f"lr {opt.param_groups[0]['lr']:.2e} peak {peak:.3f} mem {mem:.1f}GiB "
+                f"time {time.time()-t0:.0f}s")
         print(line, flush=True); log.write(line + "\n"); log.flush()
 
-        if dv_loss < best:
-            best = dv_loss
+        crit = dv_loss if a.select == "loss" else -A_dev
+        if crit < best:
+            best = crit
             save_safetensors(model, out / "best.safetensors")
             digest = hashlib.sha256((out / 'best.safetensors').read_bytes()).hexdigest()
             (out / 'checkpoint.sha256').write_text(f'{digest}  best.safetensors\n')
@@ -256,7 +320,7 @@ def main():
                     "torch_rng": torch.get_rng_state(), "loader_rng": g.get_state(),
                     "cuda_rng": torch.cuda.get_rng_state_all() if dev.type == 'cuda' else None},
                    out / "last.pt")
-    print("done. best dev loss", best)
+    print("done. best", best)
 
 
 if __name__ == "__main__":

@@ -100,3 +100,54 @@ The implementation is adapted from
 `e97448375cd1e883276ad583317b1828318910dc`; retain `LICENSE-FullSubNet` and cite the
 paper and implementation. `cli/submission/model_prof.py` is the original untrained
 interface demo. The handout and staff-owned CLI remain in `handout/` and `cli/`.
+
+## Spec-loss and noise-remix experiments 
+**Commit Date: 11/12/2026**
+
+Four FullSubNet runs, all with the unchanged 5,637,635-parameter architecture,
+seed 0, 30 epochs, batch 8, 4 s crops, and the same speaker-grouped split
+(10,836 train / 736 dev files, dev speakers p256 and p287). Scores below come from the
+unchanged staff CLI on the dev split, not the course leaderboard.
+
+| Run | Flags added to `train.py` | Noisy A | Noisy PESQ | Noisy STOI | Noisy SI-SDR (dB) | Clean A | Score |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Earlier baseline | (mask-MSE selection, constant LR) | 0.6015 | 2.428 | 0.859 | 14.06 | 0.9407 | 65.24 |
+| `fsn_base_sel` (control) | `--select score --cosine` | 0.6019 | 2.425 | 0.859 | 14.17 | 0.9606 | 65.57 |
+| `fsn_spec` | control + `--spec-loss-weight 1.0` | 0.5996 | 2.394 | 0.860 | 14.30 | 0.9691 | 65.50 |
+| `fsn_remix` | control + `--remix-prob 0.5` | 0.5989 | 2.401 | 0.858 | 14.18 | 0.9703 | 65.46 |
+| `fsn_spec_remix` | control + both | 0.6053 | 2.432 | 0.863 | 14.39 | 0.9704 | 66.01 |
+
+**What the flags do.**
+`--spec-loss-weight` adds a power-compressed (c=0.3) magnitude and real/imaginary
+spectral loss on the reconstructed spectrum to the compressed-mask MSE.
+`--remix-prob` replaces a training pair with clean speech from one file plus noise
+(noisy minus clean) from another at a random SNR in [0, 20] dB.
+`--select score` picks the checkpoint by a dev PESQ/STOI/SI-SDR composite on 40 full
+utterances. `--cosine` decays the learning rate. All options default to the original
+behavior.
+
+**Reading the results.**
+- Best dev score is `fsn_spec_remix` (66.01), but its noisy A is only +0.0034 above the
+  control. This is one seed and is within the run-to-run variation seen elsewhere in
+  the table (the control and the earlier baseline differ by 0.02 in clean A with no
+  change to the clean path). It is not a confirmed improvement.
+- `--spec-loss-weight` alone and `--remix-prob` alone showed no noisy-side benefit.
+- The control matches the earlier baseline on noisy A (0.6019 vs 0.6015), so cosine LR
+  and score-based selection did not move noisy quality.
+- All outputs were valid: peak magnitude about 0.52 to 0.54, zero rejected files.
+- Not yet done: additional seeds, paired bootstrap intervals, per-SNR and per-noise
+  breakdowns.
+
+**Reproduce.** Export `DATA_ROOT`, `TRAIN_MANIFEST` (`runs/baseline/train_files.txt`) and
+`DEV_MANIFEST` (`runs/baseline/dev_files.txt`), then from the repository root:
+
+```sh
+qsub -V -N fsn_spec_remix train_mod.sh fsn_spec_remix --select score --cosine \
+  --spec-loss-weight 1.0 --remix-prob 0.5
+```
+
+`train_mod.sh` trains, then runs the staff `enhance.py`, `evaluate.py` and `score.py`.
+Per-run `config.json`, `log.txt`, `cli_scores.txt` and `checkpoint.sha256` are in
+`runs/<name>/`. Per-utterance reports and weights stay on SCC and are not in Git.
+The model change is one added method, `training_triplet`, in `cli/submission/model.py`;
+`forward()` is unchanged.
