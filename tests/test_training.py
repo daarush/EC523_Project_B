@@ -1,4 +1,5 @@
 import sys
+import types
 import tempfile
 import unittest
 from pathlib import Path
@@ -31,10 +32,10 @@ class TrainingChecks(unittest.TestCase):
         model = FullSubNet(fb_hidden=8, sb_hidden=8, weight_init=False).train()
         clean = torch.randn(4, 1024)*.05
         noisy = clean + torch.randn_like(clean)*.02
-        base = training_loss(model, noisy, clean, 0)
+        base = training_loss(model, noisy, clean, types.SimpleNamespace(spec_loss_weight=0.0, clean_loss_weight=0.0))
         pred, target = model.training_pair(clean, clean)
         expected = base + .1*torch.nn.functional.mse_loss(pred, target)
-        combined = training_loss(model, noisy, clean, .1)
+        combined = training_loss(model, noisy, clean, types.SimpleNamespace(spec_loss_weight=0.0, clean_loss_weight=.1))
         torch.testing.assert_close(combined, expected)
         combined.backward()
         for network in (model.fb_model, model.sb_model):

@@ -20,3 +20,5 @@ checkpoint_review/
 runs/*/bundle/
 runs/*/evaluation/pred_*/
 *.tar.gz
+snapshots/
+rough.txt

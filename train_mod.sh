@@ -23,6 +23,13 @@ RUN=$PROJ/runs/$NAME
 mkdir -p "$RUN"
 cd "$PROJ"
 
+# This code makes every run trains and scores with its own frozen copy of the model code, so parallel jobs with different architectures can’t mix.
+# i.e. like a snapshot
+SNAP=$PROJ/snapshots/$NAME
+mkdir -p "$SNAP" && cp -r "$PROJ/cli/submission" "$SNAP/"
+[ -n "${FSN_ARCH:-}" ] && sed -i "s/^ARCH: dict = {}$/ARCH: dict = $FSN_ARCH/" "$SNAP/submission/model.py"
+grep -n "^ARCH" "$SNAP/submission/model.py"
+
 echo "=== $NAME | flags: $* ==="; hostname; nvidia-smi -L; date
 
 echo "=== resources ==="
