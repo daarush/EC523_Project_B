@@ -151,3 +151,27 @@ Per-run `config.json`, `log.txt`, `cli_scores.txt` and `checkpoint.sha256` are i
 `runs/<name>/`. Per-utterance reports and weights stay on SCC and are not in Git.
 The model change is one added method, `training_triplet`, in `cli/submission/model.py`;
 `forward()` is unchanged.
+
+## Clean loss + larger sub-band experiments
+**Commit Date: 11/20/2026**
+
+Two runs on top of `fsn_spec_remix`, same split, seed 0, 30 epochs, batch 8, 4 s crops,
+`--select score --cosine --spec-loss-weight 1.0 --remix-prob 0.5`. Scores are from the
+unchanged staff CLI on the dev split, not the leaderboard.
+
+| Run | Change | Params | Noisy A | Clean A | Dev score | Train mem | s/epoch |
+|---|---|---:|---:|---:|---:|---:|---:|
+| `fsn_spec_remix` | (previous) | 5,637,635 | 0.6053 | 0.9704 | 66.01 | 9.6 GiB | 127 |
+| `fsn_scr` | + `--clean-loss-weight 0.1` | 5,637,635 | 0.6073 | 0.9924 | 66.51 | 12.4 GiB | 242 |
+| `fsn_scr_sb512` | + `sb_hidden` 384 -> 512 | 7,032,579 | 0.6067 | 0.9950 | 66.49 | 16.4 GiB | 345 |
+
+**Reading the results.**
+- The clean-input loss raised clean preservation (0.970 -> 0.992) without lowering noisy quality.
+- A 25% larger sub-band LSTM gave no measurable noisy-side gain (difference within single-seed noise).
+- `fsn_scr` is the 11/20 server submission (checkpoint SHA-256 `85c7f703...`).
+
+**Architecture switch.** `cli/submission/model.py` has an `ARCH` dict passed to `FullSubNet`
+(empty = baseline). `train_mod.sh` copies `cli/submission/` to `snapshots/<run>/` and writes
+`FSN_ARCH` into it, e.g. `FSN_ARCH='{"sb_hidden": 512}' qsub -V ... train_mod.sh <run> ...`.
+Submit a run's `best.safetensors` with the `model.py` whose `ARCH` it was trained with.
+`tests/test_training.py` was updated to the current `training_loss` signature.

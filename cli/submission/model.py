@@ -205,7 +205,9 @@ class FullSubNet(nn.Module):
         if sample_rate != 16_000 or waveform.ndim != 2 or waveform.shape[0] != 1:
             raise ValueError("expected one [1,T] waveform at 16 kHz")
         return self.forward(waveform)
-
+    
+# Added this such that we can adjust the architecture (size); empty dict = baseline configuration
+ARCH: dict = {}
 
 def build_enhancer(sample_rate: int) -> nn.Module:
-    return FullSubNet(sample_rate=sample_rate)
+    return FullSubNet(sample_rate=sample_rate, **ARCH)
